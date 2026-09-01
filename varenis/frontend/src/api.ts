@@ -22,8 +22,46 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
 
 // ---------- Checkout ----------
 
+export interface ShippingAddress {
+  name: string;
+  address1: string;
+  address2?: string;
+  city: string;
+  state_code: string;
+  country_code: string;
+  zip: string;
+  phone?: string;
+  email?: string;
+}
+
+export interface ShippingRate {
+  id: string;
+  name: string;
+  rateCents: number;
+}
+
+// Ask the backend (which asks Printful) what shipping costs for this cart +
+// address. Called before checkout so the customer pays exact shipping.
+export function quoteShipping(
+  lines: CartLine[],
+  address: Omit<ShippingAddress, "name" | "phone" | "email">
+): Promise<{ rates: ShippingRate[]; productSubtotalCents: number }> {
+  return request("/quote/shipping", {
+    method: "POST",
+    body: JSON.stringify({
+      items: lines.map((l) => ({
+        productId: l.product.id,
+        size: l.size,
+        quantity: l.quantity,
+      })),
+      address,
+    }),
+  });
+}
+
 export function createCheckoutSession(
   lines: CartLine[],
+  shipping: ShippingAddress & { shippingName: string; shippingCents: number },
   creatorCode?: string
 ): Promise<{ url: string }> {
   return request("/checkout/session", {
@@ -31,9 +69,10 @@ export function createCheckoutSession(
     body: JSON.stringify({
       items: lines.map((l) => ({
         productId: l.product.id,
-        size: l.size, // may be null for unsized products
+        size: l.size,
         quantity: l.quantity,
       })),
+      shipping,
       creatorCode: creatorCode?.trim() || undefined,
     }),
   });

@@ -130,6 +130,9 @@ export async function getShippingRates(input: {
   >;
   items: PrintfulItem[];
 }): Promise<Array<{ id: string; name: string; rate: string; currency: string }>> {
+  // Printful's /shipping/rates expects items by CATALOG variant_id (the blank
+  // garment's variant), not the sync_variant_id used for orders. Callers pass
+  // the catalog variant_id in item.variant_id here.
   const res = await fetch(`${API_BASE}/shipping/rates`, {
     method: "POST",
     headers: baseHeaders,
@@ -139,15 +142,27 @@ export async function getShippingRates(input: {
         variant_id: i.variant_id,
         quantity: i.quantity,
       })),
+      currency: "USD",
     }),
   });
 
   const json = (await res.json().catch(() => null)) as
-    | { code: number; result: Array<{ id: string; name: string; rate: string; currency: string }> }
+    | {
+        code: number;
+        result: Array<{ id: string; name: string; rate: string; currency: string }>;
+        error?: { message?: string };
+      }
     | null;
 
   if (!res.ok || !json || json.code >= 400) {
-    throw new Error(`Printful shipping rates failed: HTTP ${res.status}`);
+    const asAny = json as unknown as {
+      error?: { message?: string };
+      result?: unknown;
+    };
+    const msg =
+      asAny?.error?.message ??
+      (typeof asAny?.result === "string" ? asAny.result : `HTTP ${res.status}`);
+    throw new Error(`Printful shipping rates failed: ${msg}`);
   }
   return json.result;
 }

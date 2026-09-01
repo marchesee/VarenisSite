@@ -4,6 +4,7 @@ import cors from "cors";
 import cookieParser from "cookie-parser";
 import rateLimit from "express-rate-limit";
 import { checkoutRouter } from "./routes/checkout.js";
+import { quoteRouter } from "./routes/quote.js";
 import { webhookRouter } from "./routes/webhook.js";
 import { ordersRouter } from "./routes/orders.js";
 import { authRouter } from "./routes/auth.js";
@@ -87,6 +88,7 @@ const authLimiter = rateLimit({
 
 app.use("/api/auth", authLimiter, authRouter);
 app.use("/api/checkout", checkoutLimiter, checkoutRouter);
+app.use("/api/quote", checkoutLimiter, quoteRouter);
 app.use("/api/orders", ordersLimiter, ordersRouter);
 
 app.get("/api/health", (_req, res) => res.json({ ok: true }));

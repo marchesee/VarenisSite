@@ -83,21 +83,37 @@ async function submitToPrintful(
 ): Promise<void> {
   try {
     const details = session.customer_details;
+    const md = session.metadata ?? {};
+
+    // We now collect the address on our own site and stash it in metadata at
+    // checkout, so read it from there first. Fall back to Stripe's
+    // shipping_details for older/other sessions just in case.
     const loose = session as unknown as {
       collected_information?: {
         shipping_details?: Stripe.Checkout.Session.ShippingDetails | null;
       };
       shipping_details?: Stripe.Checkout.Session.ShippingDetails | null;
     };
-    const shipping =
+    const stripeShip =
       loose.collected_information?.shipping_details ??
       loose.shipping_details ??
       null;
-    const addr = shipping?.address;
 
-    if (!addr || !details) {
+    const recipient = {
+      name: md.ship_name || stripeShip?.name || details?.name || "Customer",
+      email: details?.email || md.ship_email || "unknown@example.com",
+      phone: md.ship_phone || details?.phone || undefined,
+      address1: md.ship_address1 || stripeShip?.address?.line1 || "",
+      address2: md.ship_address2 || stripeShip?.address?.line2 || undefined,
+      city: md.ship_city || stripeShip?.address?.city || "",
+      state_code: md.ship_state || stripeShip?.address?.state || "",
+      country_code: md.ship_country || stripeShip?.address?.country || "US",
+      zip: md.ship_zip || stripeShip?.address?.postal_code || "",
+    };
+
+    if (!recipient.address1 || !recipient.city || !recipient.zip) {
       console.error(
-        `[printful] Order ${orderId}: no shipping address on session; ` +
+        `[printful] Order ${orderId}: no usable shipping address; ` +
           `cannot fulfill. Recorded as paid — fulfill manually.`
       );
       return;
@@ -130,8 +146,7 @@ async function submitToPrintful(
         continue;
       }
 
-      items.push({ variant_id: ref.variantId, quantity: li.quantity ?? 1 });
-    }
+      items.push({ variant_id: ref.syncVariantId, quantity: li.quantity ?? 1 });    }
 
     if (items.length === 0) {
       console.error(
@@ -144,17 +159,7 @@ async function submitToPrintful(
     const created = await createPrintfulOrder({
       externalId: orderId,
       confirm: false, // draft until you confirm; flip to true to auto-ship
-      recipient: {
-        name: (shipping?.name ?? details.name) ?? "Customer",
-        email: details.email ?? "unknown@example.com",
-        phone: details.phone ?? undefined,
-        address1: addr.line1 ?? "",
-        address2: addr.line2 ?? undefined,
-        city: addr.city ?? "",
-        state_code: addr.state ?? "",
-        country_code: addr.country ?? "US",
-        zip: addr.postal_code ?? "",
-      },
+      recipient,
       items,
     });
 

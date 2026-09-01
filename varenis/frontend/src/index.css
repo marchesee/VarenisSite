@@ -1205,3 +1205,105 @@ button {
   border-color: var(--fg);
   opacity: 1;
 }
+
+/* ---- Checkout shipping form ---- */
+.cart-drawer__form {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.fld {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+.fld > span {
+  font-size: 11px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--fg-soft);
+}
+.fld input,
+.fld select {
+  background: transparent;
+  border: 1px solid var(--line-strong);
+  border-radius: 2px;
+  padding: 9px 11px;
+  color: var(--fg);
+  font-family: inherit;
+  font-size: 14px;
+}
+.fld input:focus,
+.fld select:focus {
+  outline: none;
+  border-color: var(--fg);
+}
+.fld select option {
+  background: var(--bg);
+  color: var(--fg);
+}
+.fld-row {
+  display: flex;
+  gap: 10px;
+}
+.fld-row .fld {
+  flex: 1;
+}
+.fld--sm {
+  max-width: 40%;
+}
+.ghost-btn {
+  background: transparent;
+  border: 1px solid var(--line-strong);
+  color: var(--fg);
+  padding: 10px;
+  border-radius: 2px;
+  font-size: 12px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: border-color 0.15s ease;
+}
+.ghost-btn:hover {
+  border-color: var(--fg);
+}
+.ship-rates {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.ship-rate {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  border: 1px solid var(--line);
+  border-radius: 2px;
+  cursor: pointer;
+}
+.ship-rate__name {
+  flex: 1;
+  font-size: 14px;
+}
+.ship-rate__price {
+  font-family: var(--font-display);
+}
+.cart-drawer__total {
+  font-family: var(--font-display);
+  font-size: 18px;
+  border-top: 1px solid var(--line);
+  padding-top: 8px;
+  margin-top: 4px;
+}
+.linkish-btn {
+  background: none;
+  border: none;
+  color: var(--fg-soft);
+  font-size: 13px;
+  cursor: pointer;
+  padding: 4px;
+  margin-top: 6px;
+}
+.linkish-btn:hover {
+  color: var(--fg);
+}

@@ -1,80 +1,75 @@
 // The bridge between YOUR catalog and Printful's numbering.
 //
-// These are SYNC VARIANT IDs — the product variant WITH your uploaded design
-// attached. Ordering by these makes Printful pull in the print files
-// automatically. (Raw catalog variant_ids fail with "Item can't be submitted
-// without any print files" because they're blank garments.) Pulled from
-// GET /store/products/{id} → sync_variants[].id via the list script.
+// Printful has TWO ids per product/size:
+//   - syncVariantId  → the variant WITH your design attached. Used for ORDERS
+//     (so Printful pulls in the print files).
+//   - catalogVariantId → the underlying blank garment's variant. Used for
+//     SHIPPING RATE quotes (shipping cost depends on the blank, not the art).
+// We store both. Pulled from GET /store/products/{id} → sync_variants[]
+// (.id = sync, .variant_id = catalog) via list-both-ids.mjs.
 //
-// NOTE ON SIZES: a real sale is a product AND a size. Full size-selection is
-// the next feature. Until then, resolvePrintfulVariant falls back to size L
-// when called without one, so the current checkout still fulfills a valid
-// variant. The map is already size-keyed, ready for that feature.
+// Keyed "<catalogId>:<size>". Sizes offered: S–3XL (tees/hoodies), S–2XL (pants).
 
 export interface PrintfulVariantRef {
-  // The Printful sync_variant_id (design attached).
-  variantId: number;
+  syncVariantId: number; // for placing orders
+  catalogVariantId: number; // for shipping-rate quotes
 }
 
 export type Size = "S" | "M" | "L" | "XL" | "2XL" | "3XL";
 
 const DEFAULT_SIZE: Size = "L";
 
-// Keyed "<catalogId>:<size>". Values are SYNC variant ids.
 export const PRINTFUL_MAP: Record<string, PrintfulVariantRef> = {
-  // Quiet Leopard Tee — Black  (store product 460209707)
-  "leopard-tee-black:S": { variantId: 5464446153 },
-  "leopard-tee-black:M": { variantId: 5464446154 },
-  "leopard-tee-black:L": { variantId: 5464446155 },
-  "leopard-tee-black:XL": { variantId: 5464446156 },
-  "leopard-tee-black:2XL": { variantId: 5464446157 },
-  "leopard-tee-black:3XL": { variantId: 5464446158 },
+  // Quiet Leopard Tee — Black
+  "leopard-tee-black:S": { syncVariantId: 5464446153, catalogVariantId: 18772 },
+  "leopard-tee-black:M": { syncVariantId: 5464446154, catalogVariantId: 18773 },
+  "leopard-tee-black:L": { syncVariantId: 5464446155, catalogVariantId: 18777 },
+  "leopard-tee-black:XL": { syncVariantId: 5464446156, catalogVariantId: 18774 },
+  "leopard-tee-black:2XL": { syncVariantId: 5464446157, catalogVariantId: 18775 },
+  "leopard-tee-black:3XL": { syncVariantId: 5464446158, catalogVariantId: 18776 },
 
-  // Quiet Leopard Tee — White  (store product 460209874)
-  "leopard-tee-white:S": { variantId: 5464447487 },
-  "leopard-tee-white:M": { variantId: 5464447488 },
-  "leopard-tee-white:L": { variantId: 5464447489 },
-  "leopard-tee-white:XL": { variantId: 5464447490 },
-  "leopard-tee-white:2XL": { variantId: 5464447491 },
-  "leopard-tee-white:3XL": { variantId: 5464447492 },
+  // Quiet Leopard Tee — White
+  "leopard-tee-white:S": { syncVariantId: 5464447487, catalogVariantId: 18793 },
+  "leopard-tee-white:M": { syncVariantId: 5464447488, catalogVariantId: 18794 },
+  "leopard-tee-white:L": { syncVariantId: 5464447489, catalogVariantId: 18798 },
+  "leopard-tee-white:XL": { syncVariantId: 5464447490, catalogVariantId: 18795 },
+  "leopard-tee-white:2XL": { syncVariantId: 5464447491, catalogVariantId: 18796 },
+  "leopard-tee-white:3XL": { syncVariantId: 5464447492, catalogVariantId: 18797 },
 
-  // Unisex Leopard Graphic Tee — White  (store product 460208903)
-  "leopard-graphic-tee-white:S": { variantId: 5464427514 },
-  "leopard-graphic-tee-white:M": { variantId: 5464427515 },
-  "leopard-graphic-tee-white:L": { variantId: 5464427516 },
-  "leopard-graphic-tee-white:XL": { variantId: 5464427517 },
-  "leopard-graphic-tee-white:2XL": { variantId: 5464427518 },
-  "leopard-graphic-tee-white:3XL": { variantId: 5464427519 },
-  // (4XL 5464427520 exists but we're offering S–3XL.)
+  // Unisex Leopard Graphic Tee — White
+  "leopard-graphic-tee-white:S": { syncVariantId: 5464427514, catalogVariantId: 15124 },
+  "leopard-graphic-tee-white:M": { syncVariantId: 5464427515, catalogVariantId: 15125 },
+  "leopard-graphic-tee-white:L": { syncVariantId: 5464427516, catalogVariantId: 15126 },
+  "leopard-graphic-tee-white:XL": { syncVariantId: 5464427517, catalogVariantId: 15127 },
+  "leopard-graphic-tee-white:2XL": { syncVariantId: 5464427518, catalogVariantId: 15128 },
+  "leopard-graphic-tee-white:3XL": { syncVariantId: 5464427519, catalogVariantId: 16335 },
 
-  // Sweatpants — Black  (store product 462973767, Black color variants)
-  "sweatpants-black:S": { variantId: 5473082307 },
-  "sweatpants-black:M": { variantId: 5473082308 },
-  "sweatpants-black:L": { variantId: 5473082309 },
-  "sweatpants-black:XL": { variantId: 5473082310 },
-  "sweatpants-black:2XL": { variantId: 5473082311 },
-  // (XS 5473082306 exists but we're offering S–2XL.)
+  // Sweatpants — Black (S–2XL)
+  "sweatpants-black:S": { syncVariantId: 5473082307, catalogVariantId: 11266 },
+  "sweatpants-black:M": { syncVariantId: 5473082308, catalogVariantId: 11267 },
+  "sweatpants-black:L": { syncVariantId: 5473082309, catalogVariantId: 11268 },
+  "sweatpants-black:XL": { syncVariantId: 5473082310, catalogVariantId: 11269 },
+  "sweatpants-black:2XL": { syncVariantId: 5473082311, catalogVariantId: 11270 },
 
+  // Sweatshirt (Hoodie) — Black (S–3XL)
+  "sweatshirt-black:S": { syncVariantId: 5473081343, catalogVariantId: 10779 },
+  "sweatshirt-black:M": { syncVariantId: 5473081344, catalogVariantId: 10780 },
+  "sweatshirt-black:L": { syncVariantId: 5473081345, catalogVariantId: 10781 },
+  "sweatshirt-black:XL": { syncVariantId: 5473081347, catalogVariantId: 10782 },
+  "sweatshirt-black:2XL": { syncVariantId: 5473081348, catalogVariantId: 10783 },
+  "sweatshirt-black:3XL": { syncVariantId: 5473081349, catalogVariantId: 13416 },
 
-  // Hoodie / Sweatshirt — Black  (store product 462973120)
-  "sweatshirt-black:S": { variantId: 5473081343 },
-  "sweatshirt-black:M": { variantId: 5473081344 },
-  "sweatshirt-black:L": { variantId: 5473081345 },
-  "sweatshirt-black:XL": { variantId: 5473081347 },
-  "sweatshirt-black:2XL": { variantId: 5473081348 },
-  "sweatshirt-black:3XL": { variantId: 5473081349 },
-
-  // Hoodie / Sweatshirt — White  (store product 462971811)
-  "sweatshirt-white:S": { variantId: 5473078923 },
-  "sweatshirt-white:M": { variantId: 5473078924 },
-  "sweatshirt-white:L": { variantId: 5473078925 },
-  "sweatshirt-white:XL": { variantId: 5473078926 },
-  "sweatshirt-white:2XL": { variantId: 5473078927 },
-  "sweatshirt-white:3XL": { variantId: 5473078928 },
+  // Sweatshirt (Hoodie) — White (S–3XL)
+  "sweatshirt-white:S": { syncVariantId: 5473078923, catalogVariantId: 10774 },
+  "sweatshirt-white:M": { syncVariantId: 5473078924, catalogVariantId: 10775 },
+  "sweatshirt-white:L": { syncVariantId: 5473078925, catalogVariantId: 10776 },
+  "sweatshirt-white:XL": { syncVariantId: 5473078926, catalogVariantId: 10777 },
+  "sweatshirt-white:2XL": { syncVariantId: 5473078927, catalogVariantId: 10778 },
+  "sweatshirt-white:3XL": { syncVariantId: 5473078928, catalogVariantId: 13421 },
 };
 
-// Look up a Printful sync variant for a catalog id, optionally with a size.
-// Without a size (today's checkout), falls back to DEFAULT_SIZE.
+// Resolve a catalog id + size to both Printful ids. Without a size (older
+// callers), falls back to DEFAULT_SIZE.
 export function resolvePrintfulVariant(
   catalogId: string,
   size?: string

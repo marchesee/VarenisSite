@@ -44,8 +44,12 @@ export function cookieOptions() {
   const isProd = process.env.NODE_ENV === "production";
   return {
     httpOnly: true, // JS on the page can't read this, even via XSS
-    secure: isProd, // HTTPS-only once deployed; allow http for local dev
-    sameSite: "lax" as const, // sent on top-level navigation, blocked cross-site
+    // In production the frontend (your domain) and backend (Render) are on
+    // different sites, so the session cookie must be SameSite=None to be sent
+    // on cross-site API calls — and SameSite=None REQUIRES Secure (HTTPS).
+    // Locally everything is http://localhost, where "lax" + not-secure works.
+    secure: isProd,
+    sameSite: (isProd ? "none" : "lax") as "none" | "lax",
     maxAge: 30 * 24 * 60 * 60 * 1000, // 30 days, matches TOKEN_TTL above
     path: "/",
   };

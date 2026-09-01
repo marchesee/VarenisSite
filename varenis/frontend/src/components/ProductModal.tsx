@@ -17,6 +17,24 @@ export function ProductModal({ product, onClose }: Props) {
   // picking a size — a gentle nudge rather than a hard error.
   const [needsSize, setNeedsSize] = useState(false);
 
+  // Gallery: track which candidate image files actually loaded (some numbered
+  // slots may not have files yet) and which one is currently shown as main.
+  const candidates = product.images ?? [];
+  const [okImages, setOkImages] = useState<string[]>(candidates);
+  const [activeImg, setActiveImg] = useState<string | null>(
+    candidates[0] ?? null
+  );
+
+  function handleImgError(src: string) {
+    // Drop a failed image from the working set; if it was the active one,
+    // fall back to the next available.
+    setOkImages((prev) => {
+      const next = prev.filter((s) => s !== src);
+      setActiveImg((cur) => (cur === src ? next[0] ?? null : cur));
+      return next;
+    });
+  }
+
   useEffect(() => {
     function onKey(e: KeyboardEvent) {
       if (e.key === "Escape") onClose();
@@ -43,8 +61,41 @@ export function ProductModal({ product, onClose }: Props) {
         aria-label={product.name}
         onClick={(e) => e.stopPropagation()}
       >
-        <div className="product-modal__frame">
-          <LeopardMark className="product-modal__mark" />
+        <div className="product-modal__gallery">
+          <div className="product-modal__frame">
+            {activeImg ? (
+              <img
+                className="product-modal__photo"
+                src={activeImg}
+                alt={`${product.name} — ${product.colorway}`}
+                onError={() => handleImgError(activeImg)}
+              />
+            ) : (
+              <LeopardMark className="product-modal__mark" />
+            )}
+          </div>
+          {okImages.length > 1 && (
+            <div className="product-modal__thumbs">
+              {okImages.map((src) => (
+                <button
+                  key={src}
+                  type="button"
+                  className={
+                    "product-modal__thumb" +
+                    (src === activeImg ? " product-modal__thumb--active" : "")
+                  }
+                  onClick={() => setActiveImg(src)}
+                  aria-label="View image"
+                >
+                  <img
+                    src={src}
+                    alt=""
+                    onError={() => handleImgError(src)}
+                  />
+                </button>
+              ))}
+            </div>
+          )}
         </div>
         <div className="product-modal__body">
           <button

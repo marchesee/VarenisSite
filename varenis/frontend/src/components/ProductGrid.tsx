@@ -24,13 +24,23 @@ export function ProductGrid({ products, onSelect }: Props) {
           onClick={() => onSelect(p)}
           aria-label={`View ${p.name}, ${p.colorway}`}
         >
-          <div
-            className="product-card__frame"
-          >
-            <span className="product-card__sku">
-              {p.sku}
-            </span>
-            <LeopardMark className="product-card__mark" />
+          <div className="product-card__frame">
+            <span className="product-card__sku">{p.sku}</span>
+            {p.images && p.images.length > 0 ? (
+              <img
+                className="product-card__photo"
+                src={p.images[0]}
+                alt={`${p.name} — ${p.colorway}`}
+                loading="lazy"
+                onError={(e) => {
+                  // If the hero photo isn't there yet, hide the broken img so
+                  // the tile background shows instead of a broken-image icon.
+                  (e.currentTarget as HTMLImageElement).style.display = "none";
+                }}
+              />
+            ) : (
+              <LeopardMark className="product-card__mark" />
+            )}
           </div>
           <div className="product-card__body">
             <div>

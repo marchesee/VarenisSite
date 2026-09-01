@@ -1120,3 +1120,88 @@ button {
   outline: none;
   border-color: var(--fg);
 }
+
+/* ---- Coming soon (empty categories) ---- */
+.coming-soon {
+  min-height: 320px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  gap: 10px;
+  padding: 80px 20px;
+}
+.coming-soon__label {
+  font-size: 11px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--fg-soft);
+  margin: 0;
+}
+.coming-soon__text {
+  font-family: var(--font-display);
+  font-size: 40px;
+  letter-spacing: 0.02em;
+  color: var(--fg);
+  margin: 0;
+}
+.coming-soon__sub {
+  font-size: 13px;
+  color: var(--fg-soft);
+  letter-spacing: 0.04em;
+  margin: 0;
+  max-width: 320px;
+}
+
+/* ---- Real product photos (fill the frame) ---- */
+.product-card__photo {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+.product-modal__photo {
+  width: 100%;
+  height: 100%;
+  max-height: 520px;
+  object-fit: cover;
+  display: block;
+}
+
+/* ---- Product modal gallery (main image + thumbnails) ---- */
+.product-modal__gallery {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.product-modal__thumbs {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  padding: 0 4px;
+}
+.product-modal__thumb {
+  width: 56px;
+  height: 68px;
+  padding: 0;
+  border: 1px solid var(--line);
+  background: #e8e5dc;
+  cursor: pointer;
+  overflow: hidden;
+  transition: border-color 0.15s ease, opacity 0.15s ease;
+  opacity: 0.7;
+}
+.product-modal__thumb img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+.product-modal__thumb:hover {
+  opacity: 1;
+}
+.product-modal__thumb--active {
+  border-color: var(--fg);
+  opacity: 1;
+}

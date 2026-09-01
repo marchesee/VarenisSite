@@ -4,16 +4,26 @@ import { Product } from "../types";
 // keeping this data source in cents means the frontend and the backend
 // checkout-session builder never have to convert back and forth.
 //
-// `tone` is a hex used to render each product's placeholder tile in a
-// monochrome palette until real photography replaces it. Everything in
-// the Varenis line lives in black / off-white / warm grey.
+// `swatch` is a hex used to render each product's placeholder tile until
+// real photography replaces it. The Varenis line lives in black / off-white.
+//
+// This is the REAL catalog — every product here exists in Printful and is
+// fulfillable. Categories with no products yet (Outerwear, Accessories) are
+// shown as "coming soon" tabs, handled in the Shop component.
 export const PRODUCTS: Product[] = [
+  // ---- Tees ----
   {
     id: "leopard-tee-black",
+    images: [
+      "/products/leopard-tee-black/1.jpg",
+      "/products/leopard-tee-black/2.jpg",
+      "/products/leopard-tee-black/3.jpg",
+      "/products/leopard-tee-black/4.jpg",
+    ],
     sku: "VR-001-BLK",
     name: "Leopard Tee",
     category: "Tees",
-    priceCents: 6800,
+    priceCents: 3500,
     weightOz: 6,
     colorway: "Black",
     swatch: "#141414",
@@ -24,10 +34,16 @@ export const PRODUCTS: Product[] = [
   },
   {
     id: "leopard-tee-white",
+    images: [
+      "/products/leopard-tee-white/1.jpg",
+      "/products/leopard-tee-white/2.jpg",
+      "/products/leopard-tee-white/3.jpg",
+      "/products/leopard-tee-white/4.jpg",
+    ],
     sku: "VR-001-WHT",
     name: "Leopard Tee",
     category: "Tees",
-    priceCents: 6800,
+    priceCents: 3500,
     weightOz: 6,
     colorway: "White",
     swatch: "#EDEBE4",
@@ -38,10 +54,16 @@ export const PRODUCTS: Product[] = [
   },
   {
     id: "leopard-graphic-tee-white",
+    images: [
+      "/products/leopard-graphic-tee-white/1.jpg",
+      "/products/leopard-graphic-tee-white/2.jpg",
+      "/products/leopard-graphic-tee-white/3.jpg",
+      "/products/leopard-graphic-tee-white/4.jpg",
+    ],
     sku: "VR-003-WHT",
     name: "Leopard Graphic Tee",
     category: "Tees",
-    priceCents: 6800,
+    priceCents: 3500,
     weightOz: 6,
     colorway: "White",
     swatch: "#EDEBE4",
@@ -50,115 +72,72 @@ export const PRODUCTS: Product[] = [
       "A unisex cut with the full leopard study printed large across the front. Relaxed through the body, true to size.",
     sizes: ["S", "M", "L", "XL", "2XL", "3XL"],
   },
+  // ---- Sweats ----
   {
-    id: "wordmark-tee-black",
-    sku: "VR-002-BLK",
-    name: "Wordmark Tee",
-    category: "Tees",
-    priceCents: 5800,
-    weightOz: 6,
+    id: "sweatshirt-black",
+    images: [
+      "/products/sweatshirt-black/1.jpg",
+      "/products/sweatshirt-black/2.jpg",
+      "/products/sweatshirt-black/3.jpg",
+      "/products/sweatshirt-black/4.jpg",
+    ],
+    sku: "VR-500-BLK",
+    name: "Sweatshirt",
+    category: "Sweats",
+    priceCents: 7000,
+    weightOz: 14,
     colorway: "Black",
     swatch: "#141414",
-    fabric: "6oz combed Pima cotton",
+    fabric: "Heavyweight cotton fleece",
     description:
-      "Quieter than the Leopard Tee. Just the Varenis wordmark and its letter-spaced Boston, centered small. For when you want the name and nothing else.",
+      "A heavyweight fleece sweatshirt in black, marked with the Varenis leopard. Brushed soft on the inside, cut for an easy drape.",
+    sizes: ["S", "M", "L", "XL", "2XL", "3XL"],
   },
   {
-    id: "boxy-crew-bone",
-    sku: "VR-101-BNE",
-    name: "Boxy Crew",
-    category: "Knitwear",
-    priceCents: 16800,
+    id: "sweatshirt-white",
+    images: [
+      "/products/sweatshirt-white/1.jpg",
+      "/products/sweatshirt-white/2.jpg",
+      "/products/sweatshirt-white/3.jpg",
+      "/products/sweatshirt-white/4.jpg",
+    ],
+    sku: "VR-500-WHT",
+    name: "Sweatshirt",
+    category: "Sweats",
+    priceCents: 7000,
     weightOz: 14,
-    colorway: "Bone",
-    swatch: "#E3DECF",
-    fabric: "Midweight cotton-cashmere",
+    colorway: "White",
+    swatch: "#EDEBE4",
+    fabric: "Heavyweight cotton fleece",
     description:
-      "A relaxed crewneck knit in a cotton-cashmere blend that softens with wear. Drop shoulder, ribbed cuffs, the leopard mark tonal at the nape.",
+      "The Varenis sweatshirt in off-white, leopard set to the chest. Heavyweight brushed fleece with a relaxed line.",
+    sizes: ["S", "M", "L", "XL", "2XL", "3XL"],
   },
   {
-    id: "boxy-crew-charcoal",
-    sku: "VR-101-CHR",
-    name: "Boxy Crew",
-    category: "Knitwear",
-    priceCents: 16800,
-    weightOz: 14,
-    colorway: "Charcoal",
-    swatch: "#2B2B2B",
-    fabric: "Midweight cotton-cashmere",
-    description:
-      "The Boxy Crew in a deep charcoal that reads almost black indoors. Same cotton-cashmere hand, same tonal mark at the nape.",
-  },
-  {
-    id: "merino-beanie",
-    sku: "VR-210-BLK",
-    name: "Merino Beanie",
-    category: "Knitwear",
-    priceCents: 5200,
-    weightOz: 3,
+    id: "sweatpants-black",
+    images: [
+      "/products/sweatpants-black/1.jpg",
+      "/products/sweatpants-black/2.jpg",
+      "/products/sweatpants-black/3.jpg",
+      "/products/sweatpants-black/4.jpg",
+    ],
+    sku: "VR-510-BLK",
+    name: "Sweatpants",
+    category: "Sweats",
+    priceCents: 5000,
+    weightOz: 12,
     colorway: "Black",
-    swatch: "#161616",
-    fabric: "Fine-gauge merino wool",
+    swatch: "#141414",
+    fabric: "Heavyweight cotton fleece",
     description:
-      "A close-knit merino beanie with a short fold. Warm without bulk, with a small woven label carrying the leopard. Boston winters, considered.",
-  },
-  {
-    id: "overshirt-ink",
-    sku: "VR-301-INK",
-    name: "Wool Overshirt",
-    category: "Outerwear",
-    priceCents: 24800,
-    weightOz: 16,
-    colorway: "Ink",
-    swatch: "#1A1B1F",
-    fabric: "Italian wool-blend flannel",
-    description:
-      "A structured overshirt in a brushed Italian wool blend, meant to sit between a shirt and a coat. Horn buttons, patch pockets, clean lines that hold a press.",
-  },
-  {
-    id: "topcoat-slate",
-    sku: "VR-320-SLT",
-    name: "Minimal Topcoat",
-    category: "Outerwear",
-    priceCents: 42800,
-    weightOz: 22,
-    colorway: "Slate",
-    swatch: "#3A3D42",
-    fabric: "Wool-cashmere melton",
-    description:
-      "An unstructured single-breasted topcoat in wool-cashmere melton. No logo, no hardware you'd notice — the shape is the statement. The leopard sits inside, at the lining.",
-  },
-  {
-    id: "leather-card-holder",
-    sku: "VR-410-BLK",
-    name: "Card Holder",
-    category: "Accessories",
-    priceCents: 8800,
-    weightOz: 2,
-    colorway: "Black",
-    swatch: "#0F0F0F",
-    fabric: "Full-grain Italian leather",
-    description:
-      "A slim four-slot card holder in full-grain leather that patinas with use. Edge-painted, blind-debossed with the leopard on the back panel.",
-  },
-  {
-    id: "silk-scarf-mono",
-    sku: "VR-420-MON",
-    name: "Printed Scarf",
-    category: "Accessories",
-    priceCents: 12800,
-    weightOz: 3,
-    colorway: "Monochrome",
-    swatch: "#4A4A4A",
-    fabric: "Sandwashed silk twill",
-    description:
-      "A large square scarf in sandwashed silk, printed with a repeating leopard study in greyscale. Finished with hand-rolled edges.",
+      "Matching fleece sweatpants in black, marked with the leopard at the hip. Tapered leg, ribbed cuff, drawcord waist.",
+    sizes: ["S", "M", "L", "XL", "2XL"],
   },
 ];
 
 export const CATEGORIES: Product["category"][] = [
   "Tees",
-  "Knitwear",
+  "Sweats",
   "Outerwear",
   "Accessories",
 ];

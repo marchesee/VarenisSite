@@ -46,6 +46,31 @@ export const PRINTFUL_MAP: Record<string, PrintfulVariantRef> = {
   "leopard-graphic-tee-white:2XL": { variantId: 5464427518 },
   "leopard-graphic-tee-white:3XL": { variantId: 5464427519 },
   // (4XL 5464427520 exists but we're offering S–3XL.)
+
+  // Sweatpants — Black  (store product 462973767, Black color variants)
+  "sweatpants-black:S": { variantId: 5473082307 },
+  "sweatpants-black:M": { variantId: 5473082308 },
+  "sweatpants-black:L": { variantId: 5473082309 },
+  "sweatpants-black:XL": { variantId: 5473082310 },
+  "sweatpants-black:2XL": { variantId: 5473082311 },
+  // (XS 5473082306 exists but we're offering S–2XL.)
+
+
+  // Hoodie / Sweatshirt — Black  (store product 462973120)
+  "sweatshirt-black:S": { variantId: 5473081343 },
+  "sweatshirt-black:M": { variantId: 5473081344 },
+  "sweatshirt-black:L": { variantId: 5473081345 },
+  "sweatshirt-black:XL": { variantId: 5473081347 },
+  "sweatshirt-black:2XL": { variantId: 5473081348 },
+  "sweatshirt-black:3XL": { variantId: 5473081349 },
+
+  // Hoodie / Sweatshirt — White  (store product 462971811)
+  "sweatshirt-white:S": { variantId: 5473078923 },
+  "sweatshirt-white:M": { variantId: 5473078924 },
+  "sweatshirt-white:L": { variantId: 5473078925 },
+  "sweatshirt-white:XL": { variantId: 5473078926 },
+  "sweatshirt-white:2XL": { variantId: 5473078927 },
+  "sweatshirt-white:3XL": { variantId: 5473078928 },
 };
 
 // Look up a Printful sync variant for a catalog id, optionally with a size.

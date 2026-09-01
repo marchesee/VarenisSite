@@ -27,7 +27,17 @@ export function Shop() {
           active={active}
           onSelect={setActive}
         />
-        <ProductGrid products={filtered} onSelect={setSelected} />
+        {filtered.length > 0 ? (
+          <ProductGrid products={filtered} onSelect={setSelected} />
+        ) : (
+          <div className="coming-soon">
+            <p className="coming-soon__label">{active}</p>
+            <p className="coming-soon__text">Coming soon</p>
+            <p className="coming-soon__sub">
+              New pieces are on the way. Check back shortly.
+            </p>
+          </div>
+        )}
       </div>
       {selected && (
         <ProductModal product={selected} onClose={() => setSelected(null)} />

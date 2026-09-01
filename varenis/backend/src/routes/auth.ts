@@ -29,16 +29,16 @@ authRouter.post("/signup", async (req, res) => {
       .status(400)
       .json({ error: "Password must be at least 8 characters." });
   }
-  if (getUserByEmail(email)) {
+  if (await getUserByEmail(email)) {
     // Note: this does reveal whether an email is registered. For a store
     // that's a reasonable trade for a clear signup error; a higher-security
     // app would return a generic message and email the address instead.
     return res.status(409).json({ error: "An account with that email already exists." });
   }
 
-  const user = createUser(email, await hashPassword(password));
+  const user = await createUser(email, await hashPassword(password));
   // Gather up any guest orders this email placed before signing up.
-  claimOrdersForUser(user.id, user.email);
+  await claimOrdersForUser(user.id, user.email);
 
   const token = signSessionToken(user.id);
   res.cookie(AUTH_COOKIE, token, cookieOptions());
@@ -49,7 +49,7 @@ authRouter.post("/login", async (req, res) => {
   const email = String(req.body?.email ?? "");
   const password = String(req.body?.password ?? "");
 
-  const user = getUserByEmail(email);
+  const user = await getUserByEmail(email);
   // Run the hash comparison even when the user doesn't exist, against a
   // dummy hash, so response timing doesn't reveal which emails are
   // registered. Then return the same generic error either way.

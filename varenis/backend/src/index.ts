@@ -72,6 +72,17 @@ app.use("/api/orders", ordersLimiter, ordersRouter);
 
 app.get("/api/health", (_req, res) => res.json({ ok: true }));
 
-app.listen(PORT, () => {
-  console.log(`Varenis backend listening on http://localhost:${PORT}`);
-});
+// Create tables if needed, THEN start listening. If the DB can't be
+// reached, fail loudly rather than start a broken server.
+import { initDb } from "./db.js";
+
+initDb()
+  .then(() => {
+    app.listen(PORT, () => {
+      console.log(`Varenis backend listening on http://localhost:${PORT}`);
+    });
+  })
+  .catch((err) => {
+    console.error("Failed to initialize database — not starting server:", err);
+    process.exit(1);
+  });

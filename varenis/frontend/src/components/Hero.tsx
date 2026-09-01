@@ -9,7 +9,7 @@ export function Hero() {
         <p className="hero__place">Boston</p>
         <p className="hero__body">
           Considered essentials in black and white. Fine cottons, cashmere,
-          and Italian wool, marked quietly by the leopard. Made to be kept.
+          marked quietly by the leopard. Made to be kept.
         </p>
         <a href="#catalog" className="hero__cta">
           The Collection

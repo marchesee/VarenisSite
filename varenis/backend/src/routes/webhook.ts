@@ -44,7 +44,7 @@ webhookRouter.post("/", async (req, res) => {
       const orderId = `ord_${session.id.slice(-14)}`;
 
       // 1) Record the paid order (source of truth that money changed hands).
-      insertOrder({
+      await insertOrder({
         id: orderId,
         stripeSessionId: session.id,
         lookupCode: generateLookupCode(),

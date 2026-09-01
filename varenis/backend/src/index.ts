@@ -11,13 +11,32 @@ import { attachUser } from "./routes/middleware.js";
 
 const app = express();
 const PORT = process.env.PORT ?? 4242;
-const FRONTEND_URL = process.env.FRONTEND_URL ?? "http://localhost:5173";
+// Allowed browser origins for cross-origin API calls. Set FRONTEND_URL to a
+// comma-separated list to allow several (e.g. your apex domain, www, and the
+// Vercel preview URL). Falls back to the local dev server.
+const ALLOWED_ORIGINS = (
+  process.env.FRONTEND_URL ?? "http://localhost:5173"
+)
+  .split(",")
+  .map((o) => o.trim())
+  .filter(Boolean);
 
 // credentials:true is required for the browser to send/receive the
-// session cookie on cross-origin API calls (frontend and backend are on
-// different ports in dev). Origin must be an explicit URL, not "*", once
-// credentials are involved.
-app.use(cors({ origin: FRONTEND_URL, credentials: true }));
+// session cookie on cross-origin API calls. Origin must be an explicit
+// match (not "*") when credentials are involved, so we check the request's
+// origin against the allow-list.
+app.use(
+  cors({
+    origin(origin, callback) {
+      // Non-browser requests (curl, health checks, server-to-server like
+      // Stripe webhooks) have no Origin header — allow those through.
+      if (!origin) return callback(null, true);
+      if (ALLOWED_ORIGINS.includes(origin)) return callback(null, true);
+      callback(new Error(`Origin not allowed by CORS: ${origin}`));
+    },
+    credentials: true,
+  })
+);
 
 // Trust the first proxy hop (typical when deployed behind Fargate/ALB,
 // Vercel, Render, etc.) so rate limiting keys off the real client IP

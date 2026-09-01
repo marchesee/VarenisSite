@@ -5,13 +5,14 @@ import React, {
   useState,
   useEffect,
 } from "react";
-import { CartLine, Product } from "../types";
+import { CartLine, Product, Size } from "../types";
 
 interface CartContextValue {
   lines: CartLine[];
-  addItem: (product: Product) => void;
-  removeItem: (productId: string) => void;
-  setQuantity: (productId: string, quantity: number) => void;
+  // size is required for products that have sizes; pass null for unsized ones.
+  addItem: (product: Product, size: Size | null) => void;
+  removeItem: (productId: string, size: Size | null) => void;
+  setQuantity: (productId: string, size: Size | null, quantity: number) => void;
   clear: () => void;
   subtotalCents: number;
   itemCount: number;
@@ -22,7 +23,15 @@ interface CartContextValue {
 
 const CartContext = createContext<CartContextValue | null>(null);
 
-const STORAGE_KEY = "fieldwork_cart_v1";
+// Bumped to v2 because the cart line shape changed (now carries size).
+// Old v1 carts in sessionStorage are ignored rather than mis-parsed.
+const STORAGE_KEY = "varenis_cart_v2";
+
+// A cart line is uniquely identified by product + size, so the same shirt in
+// two sizes is two lines.
+function sameLine(l: CartLine, productId: string, size: Size | null): boolean {
+  return l.product.id === productId && l.size === size;
+}
 
 export function CartProvider({ children }: { children: React.ReactNode }) {
   const [lines, setLines] = useState<CartLine[]>(() => {
@@ -39,33 +48,33 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
     sessionStorage.setItem(STORAGE_KEY, JSON.stringify(lines));
   }, [lines]);
 
-  function addItem(product: Product) {
+  function addItem(product: Product, size: Size | null) {
     setLines((prev) => {
-      const existing = prev.find((l) => l.product.id === product.id);
+      const existing = prev.find((l) => sameLine(l, product.id, size));
       if (existing) {
         return prev.map((l) =>
-          l.product.id === product.id
+          sameLine(l, product.id, size)
             ? { ...l, quantity: l.quantity + 1 }
             : l
         );
       }
-      return [...prev, { product, quantity: 1 }];
+      return [...prev, { product, size, quantity: 1 }];
     });
     setIsOpen(true);
   }
 
-  function removeItem(productId: string) {
-    setLines((prev) => prev.filter((l) => l.product.id !== productId));
+  function removeItem(productId: string, size: Size | null) {
+    setLines((prev) => prev.filter((l) => !sameLine(l, productId, size)));
   }
 
-  function setQuantity(productId: string, quantity: number) {
+  function setQuantity(productId: string, size: Size | null, quantity: number) {
     if (quantity <= 0) {
-      removeItem(productId);
+      removeItem(productId, size);
       return;
     }
     setLines((prev) =>
       prev.map((l) =>
-        l.product.id === productId ? { ...l, quantity } : l
+        sameLine(l, productId, size) ? { ...l, quantity } : l
       )
     );
   }
@@ -76,10 +85,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
 
   const subtotalCents = useMemo(
     () =>
-      lines.reduce(
-        (sum, l) => sum + l.product.priceCents * l.quantity,
-        0
-      ),
+      lines.reduce((sum, l) => sum + l.product.priceCents * l.quantity, 0),
     [lines]
   );
 

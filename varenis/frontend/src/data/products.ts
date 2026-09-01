@@ -20,6 +20,7 @@ export const PRODUCTS: Product[] = [
     fabric: "6oz combed Pima cotton",
     description:
       "The signature piece. A heavyweight black tee with the Varenis leopard set small at the left chest, printed in soft white. Cut boxy through the body with a ribbed crew that keeps its shape.",
+    sizes: ["S", "M", "L", "XL", "2XL", "3XL"],
   },
   {
     id: "leopard-tee-white",
@@ -33,6 +34,21 @@ export const PRODUCTS: Product[] = [
     fabric: "6oz combed Pima cotton",
     description:
       "The leopard rendered large across the front in fine graphite linework, under the Varenis wordmark. A gallery print on a garment — meant to be seen.",
+    sizes: ["S", "M", "L", "XL", "2XL", "3XL"],
+  },
+  {
+    id: "leopard-graphic-tee-white",
+    sku: "VR-003-WHT",
+    name: "Leopard Graphic Tee",
+    category: "Tees",
+    priceCents: 6800,
+    weightOz: 6,
+    colorway: "White",
+    swatch: "#EDEBE4",
+    fabric: "Unisex combed cotton",
+    description:
+      "A unisex cut with the full leopard study printed large across the front. Relaxed through the body, true to size.",
+    sizes: ["S", "M", "L", "XL", "2XL", "3XL"],
   },
   {
     id: "wordmark-tee-black",

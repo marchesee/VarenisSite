@@ -4,13 +4,15 @@ import { stripe } from "../stripe.js";
 import { insertOrder, generateLookupCode } from "../db.js";
 import { createPrintfulOrder } from "../printful.js";
 import { resolvePrintfulVariant } from "../printful-map.js";
+import { PRODUCTS } from "../products.js";
+import { resolveCreatorCode } from "../creator-codes.js";
+import { appendSaleRow } from "../creator-csv.js";
 
 export const webhookRouter = Router();
 
-// IMPORTANT: this route must receive the RAW request body (not JSON
-// parsed) or Stripe's signature check will fail. That's wired up in
-// index.ts by mounting express.raw() only for this path, before the
-// global express.json() middleware.
+// IMPORTANT: this route must receive the RAW request body (not JSON parsed)
+// or Stripe's signature check will fail. Wired up in index.ts by mounting
+// express.raw() only for this path, before the global express.json().
 webhookRouter.post("/", async (req, res) => {
   const signature = req.headers["stripe-signature"];
   const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET;
@@ -22,11 +24,7 @@ webhookRouter.post("/", async (req, res) => {
 
   let event: Stripe.Event;
   try {
-    event = stripe.webhooks.constructEvent(
-      req.body, // raw Buffer
-      signature,
-      webhookSecret
-    );
+    event = stripe.webhooks.constructEvent(req.body, signature, webhookSecret);
   } catch (err) {
     console.error("Webhook signature verification failed:", err);
     return res.status(400).send("Invalid signature.");
@@ -36,19 +34,16 @@ webhookRouter.post("/", async (req, res) => {
     const slimSession = event.data.object as Stripe.Checkout.Session;
 
     try {
-      // The session on the webhook EVENT is slim on line items, so retrieve
-      // the full session and expand the line items (with product) so we can
-      // read the catalogId. customer_details and shipping_details come back
-      // on the session automatically — they must NOT be in expand[].
+      // Retrieve the full session with line items + their product expanded,
+      // and the total_details expanded so we can read the discount amount.
       const session = await stripe.checkout.sessions.retrieve(slimSession.id, {
-        expand: ["line_items.data.price.product"],
+        expand: ["line_items.data.price.product", "total_details"],
       });
 
       const lineItems = session.line_items?.data ?? [];
       const orderId = `ord_${session.id.slice(-14)}`;
 
-      // 1) Record the paid order first — the source of truth that money
-      //    changed hands. Must succeed independently of fulfillment.
+      // 1) Record the paid order (source of truth that money changed hands).
       insertOrder({
         id: orderId,
         stripeSessionId: session.id,
@@ -64,33 +59,30 @@ webhookRouter.post("/", async (req, res) => {
         })),
       });
 
-      // 2) Submit to Printful for fulfillment. Isolated: payment already
-      //    succeeded and the order is already recorded, so a Printful
-      //    failure must NOT throw away the sale. Logged for manual resubmit.
+      // 2) Fulfillment (isolated so a failure never loses the sale).
       await submitToPrintful(session, orderId);
+
+      // 3) Creator-code accounting → CSV (also isolated).
+      await recordCreatorSale(session, orderId).catch((e) =>
+        console.error(`[csv] Failed to write sale row for ${orderId}:`, e)
+      );
     } catch (err) {
       console.error("Failed to record order from webhook:", err);
-      // Still 200 so Stripe doesn't retry forever on a bug a retry can't
-      // fix; the payment already succeeded either way.
+      // Still 200 so Stripe doesn't retry forever; payment already succeeded.
     }
   }
 
   res.json({ received: true });
 });
 
-// Translate the (fully-expanded) Stripe session into a Printful order and
-// submit it. Kept separate so the fulfillment failure mode is isolated from
-// the payment-recording path above.
+// ---- Fulfillment ----------------------------------------------------------
+
 async function submitToPrintful(
   session: Stripe.Checkout.Session,
   orderId: string
 ): Promise<void> {
   try {
     const details = session.customer_details;
-    // On the pinned API version shipping lives on shipping_details (now
-    // populated because we retrieved the session with it expanded). Newer
-    // API versions moved it to collected_information; tolerate both via a
-    // loose read so a future Stripe upgrade doesn't silently break this.
     const loose = session as unknown as {
       collected_information?: {
         shipping_details?: Stripe.Checkout.Session.ShippingDetails | null;
@@ -112,13 +104,13 @@ async function submitToPrintful(
     }
 
     const lineItems = session.line_items?.data ?? [];
-
     const items = [];
+
     for (const li of lineItems) {
       const product = li.price?.product as Stripe.Product | undefined;
-      const catalogId =
-        (li.price?.metadata?.catalogId as string | undefined) ??
-        (product?.metadata?.catalogId as string | undefined);
+      const meta = product?.metadata ?? {};
+      const catalogId = meta.catalogId as string | undefined;
+      const size = (meta.size as string | undefined) || undefined;
 
       if (!catalogId) {
         console.error(
@@ -128,11 +120,12 @@ async function submitToPrintful(
         continue;
       }
 
-      const ref = resolvePrintfulVariant(catalogId);
+      // Resolve the exact Printful sync variant for this catalogId + size.
+      const ref = resolvePrintfulVariant(catalogId, size);
       if (!ref) {
         console.error(
-          `[printful] Order ${orderId}: no Printful mapping for "${catalogId}"; ` +
-            `skipping. Add it to printful-map.ts.`
+          `[printful] Order ${orderId}: no Printful mapping for ` +
+            `"${catalogId}"${size ? ` size ${size}` : ""}; skipping.`
         );
         continue;
       }
@@ -150,9 +143,7 @@ async function submitToPrintful(
 
     const created = await createPrintfulOrder({
       externalId: orderId,
-      // confirm:false => Printful holds it as a DRAFT so nothing prints
-      // while testing. Flip to true (or confirm in the dashboard) when live.
-      confirm: false,
+      confirm: false, // draft until you confirm; flip to true to auto-ship
       recipient: {
         name: (shipping?.name ?? details.name) ?? "Customer",
         email: details.email ?? "unknown@example.com",
@@ -178,4 +169,63 @@ async function submitToPrintful(
       err
     );
   }
+}
+
+// ---- Creator-code accounting ---------------------------------------------
+
+async function recordCreatorSale(
+  session: Stripe.Checkout.Session,
+  orderId: string
+): Promise<void> {
+  const code = session.metadata?.creatorCode;
+  const creator = resolveCreatorCode(code);
+
+  // Only track orders that actually used a known creator code.
+  if (!creator) return;
+
+  const lineItems = session.line_items?.data ?? [];
+
+  // Post-discount item revenue = sum of each line's amount_total (Stripe has
+  // already applied the discount there). Also sum our cost from the catalog.
+  let revenueCents = 0;
+  let costCents = 0;
+  for (const li of lineItems) {
+    revenueCents += li.amount_total ?? 0;
+    const product = li.price?.product as Stripe.Product | undefined;
+    const catalogId = product?.metadata?.catalogId as string | undefined;
+    const cat = catalogId ? PRODUCTS[catalogId] : undefined;
+    const unitCost = cat?.costCents ?? 0;
+    costCents += unitCost * (li.quantity ?? 1);
+  }
+
+  // Discount amount Stripe applied (in cents), if any.
+  const discountCents = session.total_details?.amount_discount ?? 0;
+
+  // Creator commission = commissionPct of post-discount revenue.
+  const commissionCents = Math.round(
+    (revenueCents * creator.commissionPct) / 100
+  );
+
+  // Profit = revenue - your product cost - creator commission.
+  // (Shipping and Stripe fees aren't included here — add later if you want a
+  // fully-loaded figure.)
+  const profitCents = revenueCents - costCents - commissionCents;
+
+  await appendSaleRow({
+    orderId,
+    creatorCode: creator.code,
+    discountPct: creator.discountPct,
+    commissionPct: creator.commissionPct,
+    revenueCents,
+    discountCents,
+    commissionCents,
+    costCents,
+    profitCents,
+  });
+
+  console.log(
+    `[csv] Recorded sale for ${orderId} — code ${creator.code}, ` +
+      `revenue ${revenueCents}c, commission ${commissionCents}c, ` +
+      `profit ${profitCents}c.`
+  );
 }

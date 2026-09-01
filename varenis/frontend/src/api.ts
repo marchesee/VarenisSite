@@ -23,15 +23,18 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
 // ---------- Checkout ----------
 
 export function createCheckoutSession(
-  lines: CartLine[]
+  lines: CartLine[],
+  creatorCode?: string
 ): Promise<{ url: string }> {
   return request("/checkout/session", {
     method: "POST",
     body: JSON.stringify({
       items: lines.map((l) => ({
         productId: l.product.id,
+        size: l.size, // may be null for unsized products
         quantity: l.quantity,
       })),
+      creatorCode: creatorCode?.trim() || undefined,
     }),
   });
 }

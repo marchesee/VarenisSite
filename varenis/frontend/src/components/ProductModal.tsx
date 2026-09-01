@@ -1,5 +1,5 @@
-import { useEffect } from "react";
-import { Product } from "../types";
+import { useEffect, useState } from "react";
+import { Product, Size } from "../types";
 import { formatPrice } from "../utils/format";
 import { useCart } from "../context/CartContext";
 import { LeopardMark } from "./LeopardMark";
@@ -11,6 +11,11 @@ interface Props {
 
 export function ProductModal({ product, onClose }: Props) {
   const { addItem } = useCart();
+  const hasSizes = !!product.sizes && product.sizes.length > 0;
+  const [size, setSize] = useState<Size | null>(null);
+  // Shown only if the user hits "Add to bag" on a sized product without
+  // picking a size — a gentle nudge rather than a hard error.
+  const [needsSize, setNeedsSize] = useState(false);
 
   useEffect(() => {
     function onKey(e: KeyboardEvent) {
@@ -19,6 +24,15 @@ export function ProductModal({ product, onClose }: Props) {
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
   }, [onClose]);
+
+  function handleAdd() {
+    if (hasSizes && !size) {
+      setNeedsSize(true);
+      return;
+    }
+    addItem(product, hasSizes ? size : null);
+    onClose();
+  }
 
   return (
     <div className="modal-overlay" onClick={onClose}>
@@ -29,9 +43,7 @@ export function ProductModal({ product, onClose }: Props) {
         aria-label={product.name}
         onClick={(e) => e.stopPropagation()}
       >
-        <div
-          className="product-modal__frame"
-        >
+        <div className="product-modal__frame">
           <LeopardMark className="product-modal__mark" />
         </div>
         <div className="product-modal__body">
@@ -60,14 +72,38 @@ export function ProductModal({ product, onClose }: Props) {
               {product.category}
             </div>
           </div>
+
+          {hasSizes && (
+            <div className="size-picker">
+              <div className="size-picker__label">
+                <span>Size</span>
+                {needsSize && (
+                  <span className="size-picker__hint">Please choose a size</span>
+                )}
+              </div>
+              <div className="size-picker__options">
+                {product.sizes!.map((s) => (
+                  <button
+                    key={s}
+                    type="button"
+                    className={
+                      "size-chip" + (size === s ? " size-chip--active" : "")
+                    }
+                    aria-pressed={size === s}
+                    onClick={() => {
+                      setSize(s);
+                      setNeedsSize(false);
+                    }}
+                  >
+                    {s}
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
+
           <p className="product-modal__price">{formatPrice(product.priceCents)}</p>
-          <button
-            className="add-to-cart"
-            onClick={() => {
-              addItem(product);
-              onClose();
-            }}
-          >
+          <button className="add-to-cart" onClick={handleAdd}>
             Add to bag
           </button>
         </div>

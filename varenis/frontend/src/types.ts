@@ -1,5 +1,7 @@
 export type Category = "Tees" | "Knitwear" | "Outerwear" | "Accessories";
 
+export type Size = "S" | "M" | "L" | "XL" | "2XL" | "3XL";
+
 export interface Product {
   id: string;
   sku: string;
@@ -11,10 +13,15 @@ export interface Product {
   swatch: string; // hex used for the generated fabric swatch
   fabric: string;
   description: string;
+  // Real, fulfillable garments list their sizes here. A product with sizes
+  // requires the customer to pick one before adding to bag. Products without
+  // sizes are display-only (not yet on Printful).
+  sizes?: Size[];
 }
 
 export interface CartLine {
   product: Product;
+  size: Size | null; // chosen size for sized products; null for unsized
   quantity: number;
 }
 

@@ -1,28 +1,34 @@
 import { Router } from "express";
 import { stripe } from "../stripe.js";
 import { PRODUCTS } from "../products.js";
+import { resolveCreatorCode } from "../creator-codes.js";
 
 export const checkoutRouter = Router();
 
 interface CartItemInput {
   productId: string;
+  size: string | null;
   quantity: number;
 }
 
+const VALID_SIZES = new Set(["S", "M", "L", "XL", "2XL", "3XL"]);
+
 checkoutRouter.post("/session", async (req, res) => {
   const items = req.body?.items as CartItemInput[] | undefined;
+  const creatorCodeInput = req.body?.creatorCode as string | undefined;
 
   if (!Array.isArray(items) || items.length === 0) {
     return res.status(400).json({ error: "Cart is empty." });
   }
 
-  // Build Stripe line items from OUR catalog, never from prices the
-  // client sent. This is the line that keeps someone from opening dev
-  // tools and checking out a $2 jacket.
+  // Build Stripe line items from OUR catalog, never from prices the client
+  // sent. This is what stops someone editing the price in dev tools.
   const lineItems: {
     price_data: {
       currency: string;
-      product_data: { name: string; metadata: { catalogId: string } };
+      // catalogId + size live on product_data.metadata (a valid place for
+      // metadata). The webhook reads them back to pick the Printful variant.
+      product_data: { name: string; metadata: { catalogId: string; size: string } };
       unit_amount: number;
     };
     quantity: number;
@@ -39,14 +45,19 @@ checkoutRouter.post("/session", async (req, res) => {
       return res.status(400).json({ error: `Invalid quantity for ${product.name}` });
     }
 
+    // size may be null for display-only unsized products; if present it must
+    // be one we recognise.
+    const size = item.size ?? "";
+    if (size && !VALID_SIZES.has(size)) {
+      return res.status(400).json({ error: `Invalid size for ${product.name}` });
+    }
+
     lineItems.push({
       price_data: {
         currency: "usd",
-        // Stamp the catalog id on the product so the webhook can read it
-        // back from the line item and map it to a Printful variant.
         product_data: {
-          name: product.name,
-          metadata: { catalogId: product.id },
+          name: size ? `${product.name} (${size})` : product.name,
+          metadata: { catalogId: product.id, size },
         },
         unit_amount: product.priceCents,
       },
@@ -54,7 +65,32 @@ checkoutRouter.post("/session", async (req, res) => {
     });
   }
 
+  // Resolve an optional creator code → a Stripe coupon for the % discount.
+  // We also stash the code in session metadata so the webhook's CSV tracker
+  // knows which creator to credit.
+  const creator = resolveCreatorCode(creatorCodeInput);
+  let discounts: { coupon: string }[] | undefined;
+  if (creator) {
+    try {
+      const coupon = await stripe.coupons.create({
+        percent_off: creator.discountPct,
+        duration: "once",
+        name: `Creator ${creator.code}`,
+      });
+      discounts = [{ coupon: coupon.id }];
+    } catch (err) {
+      console.error("Failed to create discount coupon:", err);
+      // If coupon creation fails, proceed without a discount rather than
+      // blocking the sale.
+    }
+  }
+
   const frontendUrl = process.env.FRONTEND_URL ?? "http://localhost:5173";
+
+  // Merge metadata: logged-in user id (if any) + creator code (if any).
+  const metadata: Record<string, string> = {};
+  if (req.user) metadata.userId = req.user.id;
+  if (creator) metadata.creatorCode = creator.code;
 
   try {
     const session = await stripe.checkout.sessions.create({
@@ -62,21 +98,12 @@ checkoutRouter.post("/session", async (req, res) => {
       line_items: lineItems,
       success_url: `${frontendUrl}/checkout/success?session_id={CHECKOUT_SESSION_ID}`,
       cancel_url: `${frontendUrl}/checkout/cancel`,
-      // Printful needs a shipping address to send the physical product.
       shipping_address_collection: { allowed_countries: ["US", "CA"] },
-      // Collect a phone too; some Printful carriers want one.
       phone_number_collection: { enabled: true },
       automatic_tax: { enabled: false },
-      // If the shopper is logged in, carry their user id through Stripe
-      // as metadata so the webhook can attach the resulting order to
-      // their account, and prefill the email so it matches. attachUser
-      // ran globally, so req.user is set for logged-in requests.
-      ...(req.user
-        ? {
-            customer_email: req.user.email,
-            metadata: { userId: req.user.id },
-          }
-        : {}),
+      ...(discounts ? { discounts } : {}),
+      ...(req.user ? { customer_email: req.user.email } : {}),
+      ...(Object.keys(metadata).length ? { metadata } : {}),
     });
 
     if (!session.url) {

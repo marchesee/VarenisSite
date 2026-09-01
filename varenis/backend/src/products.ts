@@ -8,11 +8,20 @@ export interface CatalogProduct {
   id: string;
   name: string;
   priceCents: number;
+  // Your cost from Printful (base + typical fulfillment) in cents. Used for
+  // real profit in the creator-code CSV. Fill in with Printful's actual base
+  // cost per item. Optional for display-only products not yet on Printful.
+  costCents?: number;
 }
 
 export const PRODUCTS: Record<string, CatalogProduct> = {
-  "leopard-tee-black": { id: "leopard-tee-black", name: "Leopard Tee — Black", priceCents: 6800 },
-  "leopard-tee-white": { id: "leopard-tee-white", name: "Leopard Tee — White", priceCents: 6800 },
+  // The three real, Printful-fulfilled tees. costCents are PLACEHOLDERS —
+  // replace with Printful's actual base cost per shirt (check the product in
+  // your Printful dashboard; typically ~$12–16 for a printed tee).
+  "leopard-tee-black": { id: "leopard-tee-black", name: "Leopard Tee — Black", priceCents: 6800, costCents: 1400 },
+  "leopard-tee-white": { id: "leopard-tee-white", name: "Leopard Tee — White", priceCents: 6800, costCents: 1400 },
+  "leopard-graphic-tee-white": { id: "leopard-graphic-tee-white", name: "Leopard Graphic Tee — White", priceCents: 6800, costCents: 1600 },
+  // Display-only for now (not on Printful) — no cost set.
   "wordmark-tee-black": { id: "wordmark-tee-black", name: "Wordmark Tee — Black", priceCents: 5800 },
   "boxy-crew-bone": { id: "boxy-crew-bone", name: "Boxy Crew — Bone", priceCents: 16800 },
   "boxy-crew-charcoal": { id: "boxy-crew-charcoal", name: "Boxy Crew — Charcoal", priceCents: 16800 },

@@ -7,6 +7,7 @@ import { OrderHistory } from "./components/OrderHistory";
 import { Account } from "./components/Account";
 import { CheckoutSuccess } from "./components/CheckoutSuccess";
 import { CheckoutCancel } from "./components/CheckoutCancel";
+import { LegalPage } from "./components/LegalPage";
 import { CartProvider } from "./context/CartContext";
 import { AuthProvider } from "./context/AuthContext";
 
@@ -21,6 +22,7 @@ export default function App() {
           <Route path="/account" element={<Account />} />
           <Route path="/checkout/success" element={<CheckoutSuccess />} />
           <Route path="/checkout/cancel" element={<CheckoutCancel />} />
+          <Route path="/legal/:slug" element={<LegalPage />} />
         </Routes>
         <Footer />
         <CartDrawer />

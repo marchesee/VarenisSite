@@ -1,3 +1,4 @@
+import { Link } from "react-router-dom";
 import { LeopardMark } from "./LeopardMark";
 
 export function Footer() {
@@ -6,9 +7,12 @@ export function Footer() {
       <div className="wrap site-footer__inner">
         <LeopardMark className="site-footer__mark" />
         <span className="site-footer__text">Varenis · Boston</span>
-        <span className="site-footer__text">
-          Secure payment by Stripe
-        </span>
+        <nav className="site-footer__links">
+          <Link to="/legal/terms">Terms</Link>
+          <Link to="/legal/privacy">Privacy</Link>
+          <Link to="/legal/refunds">Returns</Link>
+        </nav>
+        <span className="site-footer__text">Secure payment by Stripe</span>
       </div>
     </footer>
   );

@@ -7,21 +7,11 @@ import {
   ShippingRate,
 } from "../api";
 import { LeopardMark } from "./LeopardMark";
+import { COUNTRIES, STATES, countryHasStates } from "../data/countries";
 
 // Two-step bag: (1) review items, (2) enter address + choose shipping, then
 // go to Stripe with exact shipping included.
 type Step = "bag" | "shipping";
-
-// Common Printful destinations. Printful ships far more widely; this is a
-// reasonable starter list and can be expanded freely.
-const COUNTRIES: { code: string; name: string }[] = [
-  { code: "US", name: "United States" },
-  { code: "CA", name: "Canada" },
-  { code: "GB", name: "United Kingdom" },
-  { code: "AU", name: "Australia" },
-  { code: "DE", name: "Germany" },
-  { code: "FR", name: "France" },
-];
 
 export function CartDrawer() {
   const { lines, isOpen, close, setQuantity, removeItem, subtotalCents, clear } =
@@ -30,6 +20,7 @@ export function CartDrawer() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [creatorCode, setCreatorCode] = useState("");
+  const [agreed, setAgreed] = useState(false);
 
   // Address fields
   const [name, setName] = useState("");
@@ -86,6 +77,10 @@ export function CartDrawer() {
   async function handleCheckout() {
     if (!chosenRate) {
       setError("Please choose a shipping option.");
+      return;
+    }
+    if (!agreed) {
+      setError("Please agree to the Terms & Policies to continue.");
       return;
     }
     setError(null);
@@ -259,18 +254,26 @@ export function CartDrawer() {
                   <span>City</span>
                   <input value={city} onChange={(e) => setCity(e.target.value)} />
                 </label>
-                <label className="fld fld--sm">
-                  <span>State</span>
-                  <input
-                    value={stateCode}
-                    onChange={(e) => setStateCode(e.target.value.toUpperCase())}
-                    placeholder="NH"
-                  />
-                </label>
+                {countryHasStates(country) && (
+                  <label className="fld fld--sm">
+                    <span>{country === "CA" ? "Province" : "State"}</span>
+                    <select
+                      value={stateCode}
+                      onChange={(e) => setStateCode(e.target.value)}
+                    >
+                      <option value="">—</option>
+                      {(STATES[country] ?? []).map((s) => (
+                        <option key={s.code} value={s.code}>
+                          {s.name}
+                        </option>
+                      ))}
+                    </select>
+                  </label>
+                )}
               </div>
               <div className="fld-row">
                 <label className="fld fld--sm">
-                  <span>ZIP</span>
+                  <span>ZIP / Postal</span>
                   <input value={zip} onChange={(e) => setZip(e.target.value)} />
                 </label>
                 <label className="fld">
@@ -279,6 +282,7 @@ export function CartDrawer() {
                     value={country}
                     onChange={(e) => {
                       setCountry(e.target.value);
+                      setStateCode(""); // states differ per country
                       setRates(null);
                       setChosenRateId(null);
                     }}
@@ -351,9 +355,31 @@ export function CartDrawer() {
                 <span>Total</span>
                 <span>{formatPrice(totalCents)}</span>
               </div>
+              <label className="agree-check">
+                <input
+                  type="checkbox"
+                  checked={agreed}
+                  onChange={(e) => setAgreed(e.target.checked)}
+                />
+                <span>
+                  I agree to the{" "}
+                  <a href="/legal/terms" target="_blank" rel="noreferrer">
+                    Terms
+                  </a>
+                  ,{" "}
+                  <a href="/legal/privacy" target="_blank" rel="noreferrer">
+                    Privacy Policy
+                  </a>
+                  , and{" "}
+                  <a href="/legal/refunds" target="_blank" rel="noreferrer">
+                    Return Policy
+                  </a>
+                  .
+                </span>
+              </label>
               <button
                 className="checkout-btn"
-                disabled={loading || !chosenRate}
+                disabled={loading || !chosenRate || !agreed}
                 onClick={handleCheckout}
               >
                 {loading ? "Redirecting…" : "Pay with card"}

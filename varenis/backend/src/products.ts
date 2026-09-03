@@ -18,12 +18,12 @@ export interface CatalogProduct {
 
 export const PRODUCTS: Record<string, CatalogProduct> = {
   // Tees — $68
-  "leopard-tee-black": { id: "leopard-tee-black", name: "Leopard Tee — Black", priceCents: 3500, costCents: 1400 },
-  "leopard-tee-white": { id: "leopard-tee-white", name: "Leopard Tee — White", priceCents: 3500, costCents: 1400 },
-  "leopard-graphic-tee-white": { id: "leopard-graphic-tee-white", name: "Leopard Graphic Tee — White", priceCents: 3500, costCents: 1600 },
+  "leopard-tee-black": { id: "leopard-tee-black", name: "Leopard Tee — Black", priceCents: 3500, costCents: 2039 },
+  "leopard-tee-white": { id: "leopard-tee-white", name: "Leopard Tee — White", priceCents: 3500, costCents: 2039 },
+  "leopard-graphic-tee-white": { id: "leopard-graphic-tee-white", name: "Leopard Graphic Tee — White", priceCents: 3500, costCents: 2250 },
   // Sweatshirts — $70
-  "sweatshirt-black": { id: "sweatshirt-black", name: "Sweatshirt — Black", priceCents: 7000, costCents: 2600 },
-  "sweatshirt-white": { id: "sweatshirt-white", name: "Sweatshirt — White", priceCents: 7000, costCents: 2600 },
+  "sweatshirt-black": { id: "sweatshirt-black", name: "Sweatshirt — Black", priceCents: 7000, costCents: 4095 },
+  "sweatshirt-white": { id: "sweatshirt-white", name: "Sweatshirt — White", priceCents: 7000, costCents: 3970 },
   // Sweatpants — $50
-  "sweatpants-black": { id: "sweatpants-black", name: "Sweatpants — Black", priceCents: 5000, costCents: 2200 },
+  "sweatpants-black": { id: "sweatpants-black", name: "Sweatpants — Black", priceCents: 5000, costCents: 3198 },
 };

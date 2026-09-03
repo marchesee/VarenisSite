@@ -8,6 +8,7 @@ import { Account } from "./components/Account";
 import { CheckoutSuccess } from "./components/CheckoutSuccess";
 import { CheckoutCancel } from "./components/CheckoutCancel";
 import { LegalPage } from "./components/LegalPage";
+import { SizeGuide } from "./components/SizeGuide";
 import { CartProvider } from "./context/CartContext";
 import { AuthProvider } from "./context/AuthContext";
 
@@ -23,6 +24,7 @@ export default function App() {
           <Route path="/checkout/success" element={<CheckoutSuccess />} />
           <Route path="/checkout/cancel" element={<CheckoutCancel />} />
           <Route path="/legal/:slug" element={<LegalPage />} />
+          <Route path="/size-guide" element={<SizeGuide />} />
         </Routes>
         <Footer />
         <CartDrawer />

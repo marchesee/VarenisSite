@@ -6,7 +6,7 @@ import { useParams, Link } from "react-router-dom";
 // attorney-reviewed. Have a lawyer or a policy service review them before you
 // rely on them heavily.
 
-const CONTACT_EMAIL = "varenisapparel@gmail.com";
+const CONTACT_EMAIL = "support@varenisapparel.com";
 const BRAND = "Varenis Apparel";
 const SITE = "varenisapparel.com";
 const EFFECTIVE = "September 2026";
@@ -153,34 +153,39 @@ function Refunds() {
       <p className="legal__meta">Effective {EFFECTIVE}</p>
 
       <p>
-        Every {BRAND} item is printed to order specifically for you. For that
-        reason we do not accept returns or exchanges for buyer's remorse,
-        change of mind, or incorrect size selected at checkout — so please
-        review the size guide and your order carefully before purchasing.
+        Every {BRAND} item is printed to order specifically for you. Because we
+        don't operate a physical store and can't restock or resell made-to-order
+        items, <strong>we cannot accept returns or exchanges for sizing</strong>
+        {" "}— including if you order the wrong size or a size doesn't fit as
+        expected. Please use the size guide and double-check your selection
+        before purchasing, as all sales are final with respect to size and fit.
       </p>
 
-      <h2>Defective or incorrect items</h2>
+      <h2>What we DO cover: defective or misprinted items</h2>
       <p>
         We stand behind the quality of what we ship. If your item arrives
-        damaged, defective, or is not what you ordered (wrong item, wrong size
-        from what you selected, or a printing flaw), we will replace it or
-        refund it at no cost to you.
+        damaged, defective, misprinted, or if we shipped you the wrong product
+        (a different item than you ordered), we will replace it or refund it at
+        no cost to you. This covers our errors and manufacturing flaws — not
+        size or fit.
       </p>
 
       <h2>How to request a replacement or refund</h2>
       <p>
         Email us at <a href={`mailto:${CONTACT_EMAIL}`}>{CONTACT_EMAIL}</a>{" "}
         within <strong>14 days</strong> of delivery with your order number and
-        a photo clearly showing the defect or error. Once approved, we'll
-        arrange a replacement or refund to your original payment method.
+        a photo clearly showing the defect, misprint, or wrong item. Once
+        approved, we'll arrange a replacement or refund to your original payment
+        method.
       </p>
 
-      <h2>Non-returnable situations</h2>
+      <h2>What is NOT returnable</h2>
       <p>
-        We can't accept returns for items that are the correct item and size as
-        ordered but no longer wanted, or for sizing issues where the size
-        received matches the size ordered. Please use the size guide before
-        ordering.
+        To be clear: we cannot accept returns, refunds, or exchanges for the
+        wrong size being ordered, a size not fitting as expected, change of
+        mind, or buyer's remorse. Since every piece is made to order and we have
+        no physical storefront, size and fit are the customer's responsibility —
+        please consult the size guide before ordering.
       </p>
 
       <h2>Lost or delayed shipments</h2>

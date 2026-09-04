@@ -26,4 +26,7 @@ export const PRODUCTS: Record<string, CatalogProduct> = {
   "sweatshirt-white": { id: "sweatshirt-white", name: "Sweatshirt — White", priceCents: 7000, costCents: 3970 },
   // Sweatpants — $50
   "sweatpants-black": { id: "sweatpants-black", name: "Sweatpants — Black", priceCents: 5000, costCents: 3198 },
+  // Headwear — one size
+  "baseball-cap-black": { id: "baseball-cap-black", name: "Baseball Cap — Black", priceCents: 3000, costCents: 1675 },
+  "beanie-black": { id: "beanie-black", name: "Cuffed Beanie — Black", priceCents: 2500, costCents: 1650 },
 };

@@ -66,14 +66,26 @@ export const PRINTFUL_MAP: Record<string, PrintfulVariantRef> = {
   "sweatshirt-white:XL": { syncVariantId: 5473078926, catalogVariantId: 10777 },
   "sweatshirt-white:2XL": { syncVariantId: 5473078927, catalogVariantId: 10778 },
   "sweatshirt-white:3XL": { syncVariantId: 5473078928, catalogVariantId: 13421 },
+
+  // Headwear — one size. Keyed with the ONE_SIZE marker (no size suffix).
+  "baseball-cap-black:ONE": { syncVariantId: 5478892736, catalogVariantId: 7854 },
+  "beanie-black:ONE": { syncVariantId: 5477481160, catalogVariantId: 8936 },
 };
 
-// Resolve a catalog id + size to both Printful ids. Without a size (older
-// callers), falls back to DEFAULT_SIZE.
+// Resolve a catalog id + size to both Printful ids. One-size products (caps,
+// beanies) are keyed with ":ONE" and are looked up when no size is given. For
+// sized products with no size passed, we fall back to L.
 export function resolvePrintfulVariant(
   catalogId: string,
   size?: string
 ): PrintfulVariantRef | null {
-  const s = size ?? DEFAULT_SIZE;
-  return PRINTFUL_MAP[`${catalogId}:${s}`] ?? null;
+  if (size) {
+    return PRINTFUL_MAP[`${catalogId}:${size}`] ?? null;
+  }
+  // No size: try the one-size key first, then the default sized fallback.
+  return (
+    PRINTFUL_MAP[`${catalogId}:ONE`] ??
+    PRINTFUL_MAP[`${catalogId}:${DEFAULT_SIZE}`] ??
+    null
+  );
 }

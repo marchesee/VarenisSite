@@ -133,11 +133,38 @@ export const PRODUCTS: Product[] = [
       "Matching fleece sweatpants in black, marked with the leopard at the hip. Tapered leg, ribbed cuff, drawcord waist.",
     sizes: ["S", "M", "L", "XL", "2XL"],
   },
+  {
+    id: "baseball-cap-black",
+    sku: "VR-600-BLK",
+    name: "Baseball Cap",
+    category: "Headwear",
+    priceCents: 3000,
+    weightOz: 4,
+    colorway: "Black",
+    swatch: "#141414",
+    fabric: "Structured cotton twill",
+    description:
+      "A classic six-panel cap in black with the Varenis leopard embroidered at the front. Adjustable strap, one size fits most.",
+  },
+  {
+    id: "beanie-black",
+    sku: "VR-610-BLK",
+    name: "Cuffed Beanie",
+    category: "Headwear",
+    priceCents: 2500,
+    weightOz: 3,
+    colorway: "Black",
+    swatch: "#141414",
+    fabric: "Ribbed knit acrylic",
+    description:
+      "A cuffed ribbed beanie in black, marked with the Varenis leopard. Warm, snug, one size fits most.",
+  },
 ];
 
 export const CATEGORIES: Product["category"][] = [
   "Tees",
   "Sweats",
+  "Headwear",
   "Outerwear",
   "Accessories",
 ];

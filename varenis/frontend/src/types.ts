@@ -1,4 +1,4 @@
-export type Category = "Tees" | "Sweats" | "Outerwear" | "Accessories";
+export type Category = "Tees" | "Sweats" | "Headwear" | "Outerwear" | "Accessories";
 
 export type Size = "S" | "M" | "L" | "XL" | "2XL" | "3XL";
 

@@ -145,6 +145,14 @@ export const PRODUCTS: Product[] = [
     fabric: "Structured cotton twill",
     description:
       "A classic six-panel cap in black with the Varenis leopard embroidered at the front. Adjustable strap, one size fits most.",
+    images: [
+      "/products/baseball-cap-black/1.jpg",
+      "/products/baseball-cap-black/2.jpg",
+      "/products/baseball-cap-black/3.jpg",
+      "/products/baseball-cap-black/4.jpg",
+      "/products/baseball-cap-black/5.jpg",
+      "/products/baseball-cap-black/6.jpg",
+    ],
   },
   {
     id: "beanie-black",
@@ -158,6 +166,7 @@ export const PRODUCTS: Product[] = [
     fabric: "Ribbed knit acrylic",
     description:
       "A cuffed ribbed beanie in black, marked with the Varenis leopard. Warm, snug, one size fits most.",
+    images: ["/products/beanie-black/1.jpg"],
   },
 ];
 
